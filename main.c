@@ -227,7 +227,13 @@ int main(int argc, char **argv)
 
 		nbch++;
 		optind++;
-	};
+	}
+
+	if(nbch <1) {
+                fprintf(stderr, "ERROR: Need at least one frequency\n\n");
+		usage();
+                exit(1);
+	}
 
 	if(jsonout || regout) 
 		verbose=0;

@@ -103,7 +103,7 @@ extern int initRtl(char * rtldev, thread_param_t * param);
 extern int runRtlSample(void);
 #endif
 #ifdef WITH_AIR
-extern int initAirspy(char **argv, int optind, thread_param_t * param);
+extern int initAirspy(thread_param_t * param);
 extern int runAirspySample(void);
 #endif
 

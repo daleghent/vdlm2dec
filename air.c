@@ -70,7 +70,7 @@ static unsigned int chooseFc(unsigned int minF,unsigned int maxF)
 }
 
 
-int initAirspy(char **argv, int optind, thread_param_t * param)
+int initAirspy(thread_param_t * param)
 {
 	int n;
 	char *argF;
@@ -80,32 +80,6 @@ int initAirspy(char **argv, int optind, thread_param_t * param)
 	uint32_t i,count;
 	uint32_t * supported_samplerates;
 
-
-	/* parse args */
-	nbch = 0;
-	while ((argF = argv[optind]) && nbch < MAXNBCHANNELS) {
-                Fd[nbch] = (int)(1000000 * atof(argF));
-		optind++;
-		if (Fd[nbch] < 118000000 || Fd[nbch] > 138000000) {
-			fprintf(stderr, "WARNING: Invalid frequency %d\n",
-				Fd[nbch]);
-			continue;
-		}
-		param[nbch].chn = nbch;
-		param[nbch].Fr = Fd[nbch];
-                if(Fd[nbch]<minFc) minFc= Fd[nbch];
-                if(Fd[nbch]>maxFc) maxFc= Fd[nbch];
-		nbch++;
-	};
-	if (nbch > MAXNBCHANNELS)
-		fprintf(stderr,
-			"WARNING: too many frequencies, taking only the first %d\n",
-			MAXNBCHANNELS);
-	if (nbch == 0) {
-		fprintf(stderr, "Need a least one frequency\n");
-		return 1;
-	}
-
         if( airspy_serial ) {
 	    if (verbose>1) {
 		fprintf(stderr, "Attempting to open airspy device 0x%016lx\n", airspy_serial);
@@ -114,7 +88,7 @@ int initAirspy(char **argv, int optind, thread_param_t * param)
 	} else {
 	    result = airspy_open(&device);
 	}
-        
+
         if( result != AIRSPY_SUCCESS ) {
 		fprintf(stderr,"airspy_open() failed: %s (%d)\n", airspy_error_name(result), result);
 		return -1;
@@ -160,6 +134,11 @@ int initAirspy(char **argv, int optind, thread_param_t * param)
         if( result != AIRSPY_SUCCESS ) {
                 fprintf(stderr,"airspy_set_linearity_gain() failed: %s (%d)\n", airspy_error_name(result), result);
         }
+
+	for(int n = 0; n < nbch; n++) {
+	    if(param[n].Fr < minFc) minFc = param[n].Fr;
+	    if(param[n].Fr > maxFc) maxFc = param[n].Fr;
+	}
 
 	Fc = chooseFc(minFc, maxFc);
         if (Fc == 0) {
